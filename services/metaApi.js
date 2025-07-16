@@ -155,13 +155,13 @@ class MetaApiService {
         }
     }
 
-    // Reklam durdurma
-    async pauseAd(adId) {
+    // Reklam durum güncelleme
+    async updateAdStatus(adId, status) {
         try {
             const response = await this.makeRequest(
                 `/${adId}`,
                 'POST',
-                { status: 'PAUSED' }
+                { status: status }
             );
 
             return {
@@ -174,6 +174,11 @@ class MetaApiService {
                 error: error.response?.data || error.message
             };
         }
+    }
+
+    // Reklam durdurma (eski metod - geriye uyumluluk için)
+    async pauseAd(adId) {
+        return this.updateAdStatus(adId, 'PAUSED');
     }
 
     // Reklam silme
@@ -267,6 +272,201 @@ class MetaApiService {
             return {
                 success: true,
                 data: response.data || []
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data || error.message
+            };
+        }
+    }
+
+    // Ad Set oluşturma
+    async createAdSet(adSetData) {
+        const {
+            campaignId,
+            name,
+            dailyBudget,
+            billingEvent = 'IMPRESSIONS',
+            optimizationGoal = 'REACH',
+            bidStrategy = 'LOWEST_COST_WITHOUT_CAP',
+            targeting = {
+                geo_locations: {
+                    countries: ['TR']
+                },
+                age_min: 18,
+                age_max: 65
+            },
+            status = 'PAUSED'
+        } = adSetData;
+
+        // Bütçe değerini cent cinsine çevir (₺1 = 100 cent)
+        // Minimum ₺50 günlük bütçe (5000 cent)
+        const budgetInCents = Math.max(dailyBudget * 100, 5000);
+
+        const requestData = {
+            name: name || `Ad Set ${Date.now()}`,
+            campaign_id: campaignId,
+            daily_budget: budgetInCents,
+            billing_event: billingEvent,
+            optimization_goal: optimizationGoal,
+            bid_strategy: bidStrategy,
+            targeting: targeting,
+            status: status
+        };
+
+        try {
+            const response = await this.makeRequest(
+                `/${this.adAccountId}/adsets`,
+                'POST',
+                requestData
+            );
+
+            return {
+                success: true,
+                adSetId: response.id,
+                data: response
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data || error.message
+            };
+        }
+    }
+
+    // Kampanya oluşturma
+    async createCampaign(campaignData) {
+        const {
+            name,
+            objective,
+            budget,
+            startDate,
+            endDate
+        } = campaignData;
+
+        const requestData = {
+            name: name || `Campaign_${Date.now()}`,
+            objective: objective || 'OUTCOME_AWARENESS',
+            status: 'PAUSED',
+            special_ad_categories: []
+        };
+
+        try {
+            const response = await this.makeRequest(
+                `/${this.adAccountId}/campaigns`,
+                'POST',
+                requestData
+            );
+
+            return {
+                success: true,
+                campaignId: response.id,
+                data: response
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data || error.message
+            };
+        }
+    }
+
+    // Kampanya güncelleme
+    async updateCampaign(campaignId, updateData) {
+        try {
+            const response = await this.makeRequest(
+                `/${campaignId}`,
+                'POST',
+                updateData
+            );
+
+            return {
+                success: true,
+                data: response
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data || error.message
+            };
+        }
+    }
+
+    // Kampanya durum güncelleme
+    async updateCampaignStatus(campaignId, status) {
+        try {
+            const response = await this.makeRequest(
+                `/${campaignId}`,
+                'POST',
+                { status: status }
+            );
+
+            return {
+                success: true,
+                data: response
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data || error.message
+            };
+        }
+    }
+
+    // Kampanya silme
+    async deleteCampaign(campaignId) {
+        try {
+            const response = await this.makeRequest(
+                `/${campaignId}`,
+                'DELETE'
+            );
+
+            return {
+                success: true,
+                data: response
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data || error.message
+            };
+        }
+    }
+
+    // Reklam seti güncelleme
+    async updateAdSet(adSetId, updateData) {
+        try {
+            const response = await this.makeRequest(
+                `/${adSetId}`,
+                'POST',
+                updateData
+            );
+
+            return {
+                success: true,
+                data: response
+            };
+        } catch (error) {
+            return {
+                success: false,
+                error: error.response?.data || error.message
+            };
+        }
+    }
+
+    // Reklam seti durum güncelleme
+    async updateAdSetStatus(adSetId, status) {
+        try {
+            const response = await this.makeRequest(
+                `/${adSetId}`,
+                'POST',
+                { status: status }
+            );
+
+            return {
+                success: true,
+                data: response
             };
         } catch (error) {
             return {

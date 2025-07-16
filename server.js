@@ -30,9 +30,13 @@ if (!fs.existsSync(logsDir)) {
 
 // Import routes
 const adRoutes = require('./routes/ads');
+const campaignRoutes = require('./routes/campaigns');
+const adSetRoutes = require('./routes/adsets');
 
 // Routes
 app.use('/api', adRoutes);
+app.use('/api', campaignRoutes);
+app.use('/api', adSetRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
