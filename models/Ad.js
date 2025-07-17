@@ -12,6 +12,7 @@ const adSchema = new mongoose.Schema({
     required: false
   },
   
+  
   // İlişkiler
   adSetId: {
     type: String,
